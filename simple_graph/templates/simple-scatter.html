@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> /* set the CSS */
+
+/* add grid lines*/
+.grid line {
+    stroke: lightgrey;
+    stroke-opacity: 1.0;
+    shape-rendering: crispEdges;
+}
+
+.grid path {
+    stroke-width: 0;
+}
+
+.line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 2px;
+    stroke-dasharray: 5, 5;
+}
+
+.axis {
+    font: 14px sans-serif;
+}
+
+.scatter {
+    r: 5;
+}
+
+</style>
+<body>
+
+<!-- load the d3.js library -->    	
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+
+// set the dimensions and margins of the graph
+var margin = {top: 50, right: 100, bottom: 30, left: 100},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+// parse the date / time
+var parseTime = d3.timeParse("%d-%b-%y");
+
+// set the ranges
+var x = d3.scaleTime().range([0, width]);
+var y = d3.scaleLinear().range([height, 0]);
+
+// define the line
+var valueline = d3.line()
+    .curve(d3.curveBasis)  // add smoothing to line using B-spline
+    // .curve(d3.curveCardinal)  // add smoothing to line using Cardinal spline
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.close); });
+
+// append the svg object to the <body> of the HTML page
+var svg = d3.select("body")
+    .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
+
+// gridlines in x axis function
+function make_x_gridlines() { 
+    return d3.axisBottom(x)
+        .ticks(5)
+}
+
+// gridlines in y axis function
+function make_y_gridlines() {  
+    return d3.axisLeft(y)
+        .ticks(5)
+}
+
+// Get the data
+d3.csv("static/data.csv", function(error, data) {
+  if (error) throw error;
+
+  // format the data
+  data.forEach(function(d) {
+      d.date = parseTime(d.date);
+      d.close = +d.close;
+  });
+
+  // Scale the range of the data
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+  y.domain(d3.extent(data, function(d) { return d.close; }));
+
+  // Add the valueline path.
+  svg.append("path")
+     .data([data])
+     .attr("class", "line")  
+     .attr("d", valueline);  
+
+  // Add scatter points
+  svg.selectAll("dot")  
+     .data(data)
+     // add circle for each data point
+     .enter().append("circle")  
+     // coordinates for each data point
+     .attr("cx", function(d) { return x(d.date); })  
+     .attr("cy", function(d) { return y(d.close); })
+     .attr("class", "scatter");
+
+  // Add the X Axis
+  svg.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(0," + height + ")")   
+      .call(d3.axisBottom(x)
+      // specify the interval of major ticks
+              .ticks(d3.timeWeek.every(1))
+              .tickFormat(d3.timeFormat("%b-%d (%a)")));
+
+  // Add the Y Axis
+  svg.append("g")
+      .attr("class", "axis")
+      .call(d3.axisLeft(y));
+
+  // add y axis label
+  svg.append("text")
+     .attr("transform", "rotate(-90)")
+     .attr("y", 0 - margin.left)
+     .attr("dy", "3em")
+     .attr("x", 0 - (height / 2))
+     .style("text-anchor", "middle")
+     .attr("class", "axis")
+     .text("Value");
+
+  // add a title
+  svg.append("text")
+      .attr("x", (width / 2))
+      .attr("y", 0 - (margin.top / 2))
+      .attr("text-anchor", "middle")
+      .attr("class", "axis")
+      .text("My Simple Graph");
+      
+  // add horizontal grid lines
+  // this is essentially a hack that adds another y axis to the RHS of the graph
+  // and then draws ticks of length "width" and sets the tick labels to empty str
+  svg.append("g")
+     .attr("class", "grid")
+     .call(make_y_gridlines()
+         .tickSize(-width)
+         .tickFormat("")
+  )
+});
+
+</script>
+</body>

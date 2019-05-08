@@ -3,9 +3,13 @@
 <style> /* set the CSS */
 
 .line {
-  fill: none;
-  stroke: steelblue;
-  stroke-width: 5px;
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 5px;
+}
+
+.axis {
+    font: 14px sans-serif;
 }
 
 </style>
@@ -67,18 +71,45 @@ d3.csv("static/data.csv", function(error, data) {
   // Add the X Axis
   // appending "g" binds the x axis to the element
   svg.append("g")
+      .attr("class", "axis")
       // draw the x axis as the bottom of the graph (default is the top)
       // by moving it down by a distance "height"
-      // .attr("transform", "translate(0," + height + ")")   
+      .attr("transform", "translate(0," + height + ")")   
       // call d3 to initiate the drawing
       // the axis[Top/Bottom] indicates whether the values and ticks should be 
       // draw above or below the horizontal axis
-      .call(d3.axisTop(x));
+      .call(d3.axisBottom(x)
+      // specify the number of major ticks, though d3 will use round to the nearest
+      // sensible interval (1 week, 1 month...)
+      //        .ticks(100));
+      // specify the interval of major ticks
+              .ticks(d3.timeWeek.every(1))
+              .tickFormat(d3.timeFormat("%b-%d (%a)")));
 
   // Add the Y Axis
   svg.append("g")
+      .attr("class", "axis")
       .call(d3.axisLeft(y));
 
+  // add y axis label
+  svg.append("text")
+     .attr("transform", "rotate(-90)")
+     // note that the rotation also rotates the x,y coordinate
+     // move the x coordinate to the margin then to the right a little
+     .attr("y", 0 - margin.left)
+     .attr("dy", "3em")
+     .attr("x", 0 - (height / 2))
+     .style("text-anchor", "middle")
+     .attr("class", "axis")
+     .text("Value")
+
+  // add a title
+  svg.append("text")
+      .attr("x", (width / 2))
+      .attr("y", 0 - (margin.top / 2))
+      .attr("text-anchor", "middle")
+      .attr("class", "axis")
+      .text("My Simple Graph");
 });
 
 </script>
