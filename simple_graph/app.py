@@ -16,5 +16,9 @@ def simple_graph_2():
 def simple_scatter():
     return render_template("simple-scatter.html")
 
+@app.route("/multiline-graph")
+def multiline_graph():
+    return render_template("multiline-graph.html")
+
 if __name__ == "__main__":
     app.run(debug=True)

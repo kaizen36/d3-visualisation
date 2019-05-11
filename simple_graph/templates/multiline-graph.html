@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> /* set the CSS */
+
+.line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 5px;
+}
+
+.line2 {
+    fill: none;
+    stroke: red;
+    stroke-width: 5px;
+}
+
+.axis {
+    font: 14px sans-serif;
+}
+
+.legend {
+    font: 14px sans-serif;
+}
+</style>
+<body>
+
+<!-- load the d3.js library -->    	
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+
+// set the dimensions and margins of the graph
+var margin = {top: 50, right: 100, bottom: 30, left: 100},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+// parse the date / time
+var parseTime = d3.timeParse("%d-%b-%y");
+
+// set the ranges
+var x = d3.scaleTime().range([0, width]);
+var y = d3.scaleLinear().range([height, 0]);
+// multiple y axis
+var yr = d3.scaleLinear().range([height, 0]);
+
+// define the line
+var valueline_close = d3.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.close); });
+
+var valueline_open = d3.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return yr(d.open); });
+
+// append the svg object to the <body> of the HTML page
+// state that the svg object as the width and height specified
+// append a 'group' element "g" to 'svg'
+// move (translate) the top left corner of "g" to (margin.left, margin.top)
+var svg = d3.select("body")
+    .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
+
+// Get the data
+d3.csv("static/data2.csv", function(error, data) {
+  if (error) throw error;
+
+  // format the data
+  data.forEach(function(d) {
+      d.date = parseTime(d.date);
+      d.close = +d.close;
+      d.open = +d.open;
+  });
+
+  // Scale the x and y axis range 
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+  y.domain(d3.extent(data, function(d) { return d.close; }));
+  yr.domain(d3.extent(data, function(d) { return d.open; }));
+
+  // Add the valueline open path.
+  svg.append("path")
+     .data([data])
+     .attr("class", "line")  // apply the css style
+     .attr("data-legend", "Open") // prepare for legend
+     .attr("d", valueline_open);  // get the attribute "d" of var valueline
+
+  // Add the valueline close path.
+  svg.append("path")
+     .data([data])
+     .attr("class", "line2")  // apply the css style
+     .attr("data-legend", "Close")
+     .attr("d", valueline_close);  // get the attribute "d" of var valueline
+
+  // Add the X Axis
+  // appending "g" binds the x axis to the element
+  svg.append("g")
+      .attr("class", "axis")
+      // draw the x axis as the bottom of the graph (default is the top)
+      // by moving it down by a distance "height"
+      .attr("transform", "translate(0," + height + ")")   
+      // call d3 to initiate the drawing
+      // the axis[Top/Bottom] indicates whether the values and ticks should be 
+      // draw above or below the horizontal axis
+      .call(d3.axisBottom(x)
+      // specify the number of major ticks, though d3 will use round to the nearest
+      // sensible interval (1 week, 1 month...)
+      //        .ticks(100));
+      // specify the interval of major ticks
+              .ticks(d3.timeWeek.every(1))
+              .tickFormat(d3.timeFormat("%b-%d (%a)")));
+
+  // Add the Y Axis
+  svg.append("g")
+      .attr("class", "axis")
+      .call(d3.axisLeft(y));
+
+  // Add the Y right Axis
+  svg.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(" + width + ",0)")
+      .call(d3.axisRight(yr));
+
+  // add y axis label
+  svg.append("text")
+     .attr("transform", "rotate(-90)")
+     // note that the rotation also rotates the x,y coordinate
+     // move the x coordinate to the margin then to the right a little
+     .attr("y", 0 - margin.left)
+     .attr("dy", "3em")
+     .attr("x", 0 - (height / 2))
+     .style("text-anchor", "middle")
+     .style("fill", "red")
+     .attr("class", "axis")
+     .text("Close")
+
+  // add y axis label
+  svg.append("text")
+     .attr("transform", "rotate(90)")
+     // note that the rotation also rotates the x,y coordinate
+     // move the x coordinate to the margin then to the right a little
+     .attr("y", 0 - width )
+     .attr("dy", "-4em")
+     .attr("x", 0 + (height / 2))
+     .style("text-anchor", "middle")
+     .style("fill", "steelblue")
+     .attr("class", "axis")
+     .text("Open")
+
+  // add a title
+  svg.append("text")
+      .attr("x", (width / 2))
+      .attr("y", 0 - (margin.top / 2))
+      .attr("text-anchor", "middle")
+      .attr("class", "axis")
+      .text("My Multi Axis Graph");
+});
+
+</script>
+</body>
