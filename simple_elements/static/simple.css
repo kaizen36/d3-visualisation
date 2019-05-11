@@ -1,0 +1,15 @@
+.circle {
+    fill: red;
+    fill-opacity: 0.5;
+    stroke: blue;
+}
+
+.polygon {
+    fill: red;
+    stroke: blue;
+}
+
+.grid line { 
+    stroke-opacity: 0.6;
+    stroke: lightgrey;    
+}

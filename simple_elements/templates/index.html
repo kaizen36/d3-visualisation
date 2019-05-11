@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+<link rel="stylesheet" href="static/simple.css">
+</head>
+<body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+var width = 449;
+var height = 449;
+var canvas = d3.select("body")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height);
+    //.append("g")
+    //.attr("transform", "translate(0, 10)")
+
+// add x and y axis
+var x = d3.scaleLinear().range([0, width]).domain([0, width]);
+var y = d3.scaleLinear().range([height, 0]).domain([height, 0]);
+canvas.append("g")
+    .call(d3.axisBottom(x));
+canvas.append("g")
+    .call(d3.axisRight(y));
+
+// add grid lines
+function x_grid() { return d3.axisTop(x).ticks(5); }
+function y_grid() { return d3.axisRight(y).ticks(5); }
+canvas.append("g")
+    .attr("class", "grid")
+    .call(x_grid().tickSize(-height));
+canvas.append("g")
+    .attr("class", "grid")
+    .call(y_grid().tickSize(width));
+
+
+canvas.append("circle")
+    .attr("class", "circle")
+    .attr("cx", 200)  // x coord of center
+    .attr("cy", 100)  // y coord of center
+    .attr("r", 25);   // radius
+
+canvas.append("rect")
+    .attr("x", 300)  // pos of top left corner
+    .attr("y", 100)  // pos of top left corner
+    .attr("width", 35)
+    .attr("height", 45)
+    .attr("rx", 10)  // radius of rounded corner
+    
+
+canvas.append("polygon")
+    .attr("class", "polygon")
+    .attr("points", "50,25, 50,50, 60,60, 75,30")  // x,y points
+    
+canvas.append("text")
+    .style("writing-mode", "tb")   // write from top to bottom
+    .text("Hello world")
+    .attr("x", 230)  // pos of anchor point
+    .attr("y", 250)   // pos of bottom of text
+    .attr("text-anchor", "end")
+
+
+</script>
+</body>
